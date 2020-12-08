@@ -72,23 +72,22 @@ def crop_slice(array):
     return area
 
 
-def get_data(data_dir, max_files, slice):
+def get_data(data_dir, max_files):
     images = make_dataset(data_dir)
     image_list_hr = []
     image_list_lr = []
     for file_idx, file_name in enumerate(images):
         print('\r{} / {}'.format(file_idx + 1, len(images)), end='')
-        raw_image = nib.load(file_name).get_fdata()
+        raw_image = nib.load(file_name).get_fdata().astype('float32')
         clipped_image = clip_image(raw_image)
         im = clipped_image
 
         im_HR = im / im.max()
         im_LR = get_lr(im_HR)
 
-        if slice:
-            slice_area = crop_slice(im_HR)
-            im_HR_slice = im_HR[slice_area]
-            im_LR_slice = im_LR[slice_area]
+        slice_area = crop_slice(im_HR)
+        im_HR_slice = im_HR[slice_area]
+        im_LR_slice = im_LR[slice_area]
 
         image_list_hr.append(im_HR_slice)
         image_list_lr.append(im_LR_slice)

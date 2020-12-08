@@ -3,6 +3,7 @@ from tensorflow import keras
 import argparse
 import datetime
 import time
+import os
 
 from data_generator import *
 from utils import psnr
@@ -58,14 +59,19 @@ if __name__ == "__main__":
     BATCH_SIZE = args.BATCH_SIZE
     EPOCHS = args.EPOCHS
 
-    total_train = get_data('../NISR/train', N_TRAIN_DATA, True)
-    total_test = get_data('../NISR/test', N_TEST_DATA, True)
+    total_train = get_data('../NISR/train', N_TRAIN_DATA)
+    total_test = get_data('../NISR/test', N_TEST_DATA)
 
     train_data_generator = train_data_generator_3d(total_train[0], total_train[1], BATCH_SIZE, N_TRAIN_DATA)
     test_data_generator = train_data_generator_3d(total_test[0], total_test[1], BATCH_SIZE, N_TEST_DATA)
 
     optimizer_gen = keras.optimizers.Adam(learning_rate=1e-4)
     optimizer_disc = keras.optimizers.Adam(learning_rate=1e-4)
+
+    tf.keras.backend.clear_session()
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    config = tf.compat.v1.ConfigProto()
+    config.gpu_options.allow_growth = True
 
     generator = Generator()
     discriminator = Discriminator()
@@ -77,11 +83,11 @@ if __name__ == "__main__":
     discriminator.summary()
 
     for epoch in range(EPOCHS):
-        print('Epoch {}/{} '.format(epoch, EPOCHS), end='')
+        print('Epoch {}/{} '.format(epoch+1, EPOCHS), end='', flush=True)
         start = time.time()
 
-        for step in range(100):
-            print('.', end='')
+        for step in range(50):
+            print('.', end='', flush=True)
             batch_lr, batch_hr = next(train_data_generator)
             train_step(batch_lr, batch_hr)
 
