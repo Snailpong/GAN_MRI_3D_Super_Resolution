@@ -22,12 +22,8 @@ def clip_image(im):
     return im
 
 
-def get_lr(im, scale):
-    #downscaled_lr = zoom(im, 1.0 / scale, order=2, prefilter=False)
-    #lr = np.clip(zoom(downscaled_lr, scale, order=2, prefilter=False), 0, im.max())
-    #lr[np.where(im == 0)] = 0
+def get_lr(im):
     imgfft = np.fft.fftn(im)
-    imgfft_zero = np.zeros((imgfft.shape[0], imgfft.shape[1], imgfft.shape[2]))
 
     x_area = y_area = z_area = 50
 
@@ -45,7 +41,7 @@ def get_lr(im, scale):
     lr = abs(imgifft3)
     return lr
 
-    
+
 def crop_slice(array):
     for i in range(array.shape[0]):
         if not np.all(array[i, :, :] == 0):
@@ -76,18 +72,7 @@ def crop_slice(array):
     return area
 
 
-def mod_crop(im, modulo):
-    H, W, D = im.shape
-    size0 = H - H % modulo
-    size1 = W - W % modulo
-    size2 = D - D % modulo
-
-    out = im[0:size0, 0:size1, 0:size2]
-
-    return out
-
-
-def get_data(data_dir, scale, max_files, slice):
+def get_data(data_dir, max_files, slice):
     images = make_dataset(data_dir)
     image_list_hr = []
     image_list_lr = []
@@ -96,22 +81,14 @@ def get_data(data_dir, scale, max_files, slice):
         raw_image = nib.load(file_name).get_fdata()
         clipped_image = clip_image(raw_image)
         im = clipped_image
-        # im = mod_crop(clipped_image, scale)
-        
+
         im_HR = im / im.max()
-        # im_LR = get_lr_axises(im_HR)
-        im_LR = get_lr(im_HR, scale)
+        im_LR = get_lr(im_HR)
 
         if slice:
             slice_area = crop_slice(im_HR)
             im_HR_slice = im_HR[slice_area]
             im_LR_slice = im_LR[slice_area]
-
-            #im_HR_slice_add = np.zeros((im_HR_slice.shape[0]+12, im_HR_slice.shape[1]+12, im_HR_slice.shape[2]+12))
-            #im_HR_slice_add[6:im_HR_slice_add.shape[0]-6, 6:im_HR_slice_add.shape[1]-6, 6:im_HR_slice_add.shape[2]-6] = im_HR_slice
-            
-            #im_LR_slice_add = np.zeros((im_LR_slice.shape[0]+12, im_LR_slice.shape[1]+12, im_LR_slice.shape[2]+12))
-            #im_LR_slice_add[6:im_LR_slice_add.shape[0]-6, 6:im_LR_slice_add.shape[1]-6, 6:im_LR_slice_add.shape[2]-6] = im_LR_slice
 
         image_list_hr.append(im_HR_slice)
         image_list_lr.append(im_LR_slice)

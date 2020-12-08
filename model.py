@@ -21,15 +21,13 @@ def discriminator_loss(real_output, fake_output):
 def generator_loss(real_output, fake_output):
     cross_entropy_loss = cross_entropy(tf.ones_like(fake_output), fake_output)
     mse_loss = tf.keras.losses.mean_squared_error(real_output, fake_output)
+
     return mse_loss + 1e-3 * cross_entropy_loss
 
 
 class Generator(Model):
-    def __init__(self,
-                 num_residual_blocks=16,
-                 upscale_factor=4):
+    def __init__(self, num_residual_blocks=4):
         super(Generator, self).__init__()
-        self.upscale_factor = upscale_factor
         self.num_residual_blocks = num_residual_blocks
 
         self.conv_1 = tf.keras.layers.Conv3D(16, 9, 1, 'same')
@@ -39,7 +37,7 @@ class Generator(Model):
         self.bn = tf.keras.layers.BatchNormalization(momentum=0.8)
 
         self.residual_blocks = tf.keras.Sequential(
-            [ResidualBlock(4) for _ in range(num_residual_blocks)],
+            [ResidualBlock(16) for _ in range(num_residual_blocks)],
             name='ResidualBlocks')
 
     def call(self, image, training=False):
@@ -77,6 +75,7 @@ class Discriminator(tf.keras.Model):
         x = self.fc_1(x)
         x = tf.nn.leaky_relu(x, alpha=0.2)
         return self.fc_2(x)
+
 
 class SRGan(tf.keras.Model):
 
