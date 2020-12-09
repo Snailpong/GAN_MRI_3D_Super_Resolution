@@ -4,6 +4,7 @@ import argparse
 import datetime
 import time
 import os
+from tqdm import tqdm
 
 from data_generator import *
 from utils import psnr
@@ -28,6 +29,8 @@ def train_step(batch_lr, batch_hr):
     optimizer_gen.apply_gradients(zip(grad_gen, generator.trainable_variables))
     optimizer_disc.apply_gradients(zip(grad_disc, discriminator.trainable_variables))
 
+    return float(tf.reduce_mean(loss_gen)), float(tf.reduce_mean(loss_disc))
+
 
 def test_step(batch_lr, batch_hr):
     generated_images = generator(batch_lr, training=False)
@@ -38,7 +41,7 @@ def test_step(batch_lr, batch_hr):
     loss_gen = generator_loss(real_output, fake_output)
     loss_disc = discriminator_loss(real_output, fake_output)
 
-    return loss_gen, loss_disc
+    return tf.reduce_mean(loss_gen), tf.reduce_mean(loss_disc)
 
 
 if __name__ == "__main__":
@@ -66,7 +69,7 @@ if __name__ == "__main__":
     test_data_generator = train_data_generator_3d(total_test[0], total_test[1], BATCH_SIZE, N_TEST_DATA)
 
     optimizer_gen = keras.optimizers.Adam(learning_rate=1e-4)
-    optimizer_disc = keras.optimizers.Adam(learning_rate=1e-4)
+    optimizer_disc = keras.optimizers.Adam(learning_rate=1e-5)
 
     tf.keras.backend.clear_session()
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
@@ -83,18 +86,24 @@ if __name__ == "__main__":
     discriminator.summary()
 
     for epoch in range(EPOCHS):
-        print('Epoch {}/{} '.format(epoch+1, EPOCHS), end='', flush=True)
         start = time.time()
 
-        for step in range(50):
-            print('.', end='', flush=True)
+        pbar = tqdm(range(50), ncols=100)
+
+        for step in pbar:
+            #print('.', end='', flush=True)
             batch_lr, batch_hr = next(train_data_generator)
-            train_step(batch_lr, batch_hr)
+            loss_gen, loss_disc = train_step(batch_lr, batch_hr)
+            pbar.set_description_str('Epoch {}/{} '.format(epoch+1, EPOCHS))
+            pbar.set_postfix_str('gen_loss: {}, disc_loss: {}'.format(round(float(loss_gen), 4), round(float(loss_disc), 4)))
 
         batch_lr, batch_hr = next(train_data_generator)
-        loss_gen, disc_gen = test_step(batch_lr, batch_hr)
+        loss_gen, loss_disc = test_step(batch_lr, batch_hr)
 
-        print('gen_loss: {}, disc_loss: {}, time: {}'.format(loss_gen.result(), disc_gen.result(), time.time() - start))
+        generator.save_weights('./models/generator')
+        discriminator.save_weights('./models/discriminator')
+
+        print('Validation - gen_loss: {}, disc_loss: {}, time: {}'.format(round(float(loss_gen), 4), round(float(loss_disc), 4), time.time() - start))
 
         
 

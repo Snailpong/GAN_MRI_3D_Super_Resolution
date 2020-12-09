@@ -8,14 +8,14 @@ import time
 
 from data_generator import *
 from utils import psnr
-from SRResnet import *
+from model import *
 
 if __name__ == "__main__":
     #tf.get_logger().setLevel('WARNING')
 
     SCALE = 4
     DATA_DIR = "./data/"
-    FILE_PATH = "./models/srcnn_{}x.hdf5".format(SCALE)
+    FILE_PATH = './models/generator'
     TRAIN_PATH = "train"
     TEST_PATH = "Set5"
 
@@ -24,9 +24,9 @@ if __name__ == "__main__":
     if not os.path.isdir(result_dir):
         os.mkdir(result_dir)
 
-    # model = SRResnet()
-    model = tf.keras.models.load_model('srcnn_{}x'.format(SCALE), custom_objects={'psnr': [psnr]})
-    # model.load_weights(FILE_PATH)
+    generator = Generator()
+    # model = tf.keras.models.load_model('srcnn_{}x'.format(SCALE), custom_objects={'psnr': [psnr]})
+    generator.load_weights('./models/generator')
     
 
     file_list = make_dataset('../NISR/test')
@@ -36,11 +36,9 @@ if __name__ == "__main__":
         raw_image = nib.load(file).get_fdata()
         clipped_image = clip_image(raw_image)
         im = clipped_image
-        # im = mod_crop(clipped_image, SCALE)
         
         im_HR = im / im.max()
-        im_LR = get_lr(im_HR, SCALE)
-        # im_LR = get_lr_axises(im_HR)
+        im_LR = get_lr(im_HR)
 
         ni_img = nib.Nifti1Image(im_LR * im.max(), np.eye(4))
         nib.save(ni_img, '{}/{}_lr.nii.gz'.format(result_dir, file_name))
@@ -49,14 +47,11 @@ if __name__ == "__main__":
         im_HR_slice = im_HR[slice_area]
         im_LR_slice = im_LR[slice_area]
 
-        #im_LR_slice_add = np.zeros((im_LR_slice.shape[0]+12, im_LR_slice.shape[1]+12, im_LR_slice.shape[2]+12))
-        #im_LR_slice_add[6:im_LR_slice_add.shape[0]-6, 6:im_LR_slice_add.shape[1]-6, 6:im_LR_slice_add.shape[2]-6] = im_LR_slice
-
         im_LR_input = im_LR_slice[np.newaxis, :, :, :, np.newaxis]
 
         timer = time.time()
 
-        im_SR = model.predict(im_LR_input)[0, :, :, :, 0]
+        im_SR = generator.predict(im_LR_input)[0, :, :, :, 0]
 
         print(time.time() - timer)
 

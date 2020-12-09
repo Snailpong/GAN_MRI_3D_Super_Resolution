@@ -11,18 +11,19 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True, label_smoot
 
 
 def discriminator_loss(real_output, fake_output):
-    real_loss = cross_entropy(tf.ones_like(real_output), real_output)
-    fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+    real_loss = tf.reduce_mean(cross_entropy(tf.ones_like(real_output), real_output))
+    fake_loss = tf.reduce_mean(cross_entropy(tf.zeros_like(fake_output), fake_output))
     total_loss = real_loss + fake_loss
 
     return total_loss
 
 
 def generator_loss(real_output, fake_output):
-    cross_entropy_loss = cross_entropy(tf.ones_like(fake_output), fake_output)
-    mse_loss = tf.keras.losses.mean_squared_error(real_output, fake_output)
+    #cross_entropy_loss = cross_entropy(tf.ones_like(fake_output), fake_output)
+    mse_loss = tf.reduce_mean(tf.keras.losses.mean_squared_error(real_output, fake_output))
 
-    return mse_loss + 1e-3 * cross_entropy_loss
+    #return mse_loss + 1e-3 * cross_entropy_loss
+    return mse_loss
 
 
 class Generator(Model):
