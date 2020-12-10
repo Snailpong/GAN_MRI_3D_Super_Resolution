@@ -13,14 +13,13 @@ from model import *
 if __name__ == "__main__":
     #tf.get_logger().setLevel('WARNING')
 
-    SCALE = 4
     DATA_DIR = "./data/"
     FILE_PATH = './models/generator'
     TRAIN_PATH = "train"
     TEST_PATH = "Set5"
 
     current_hour = time.strftime('%m%d%H', time.localtime(time.time()))
-    result_dir = './result/{}_{}x/'.format(current_hour, SCALE)
+    result_dir = './result/{}/'.format(current_hour)
     if not os.path.isdir(result_dir):
         os.mkdir(result_dir)
 

@@ -15,12 +15,12 @@ from model import *
 def train_step(batch_lr, batch_hr):
 
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        generated_images = generator(batch_lr, training=True)
+        batch_es = generator(batch_lr, training=True)
         
         real_output = discriminator(batch_hr, training=True)
-        fake_output = discriminator(generated_images, training=True)
+        fake_output = discriminator(batch_es, training=True)
 
-        loss_gen = generator_loss(real_output, fake_output)
+        loss_gen = generator_loss(batch_hr, batch_es, fake_output)
         loss_disc = discriminator_loss(real_output, fake_output)
 
     grad_gen = gen_tape.gradient(loss_gen, generator.trainable_variables)
@@ -33,12 +33,12 @@ def train_step(batch_lr, batch_hr):
 
 
 def test_step(batch_lr, batch_hr):
-    generated_images = generator(batch_lr, training=False)
+    batch_es = generator(batch_lr, training=False)
         
     real_output = discriminator(batch_hr, training=False)
-    fake_output = discriminator(generated_images, training=False)
+    fake_output = discriminator(batch_es, training=False)
 
-    loss_gen = generator_loss(real_output, fake_output)
+    loss_gen = generator_loss(batch_hr, batch_es, fake_output)
     loss_disc = discriminator_loss(real_output, fake_output)
 
     return tf.reduce_mean(loss_gen), tf.reduce_mean(loss_disc)
