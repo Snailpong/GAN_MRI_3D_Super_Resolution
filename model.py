@@ -19,11 +19,10 @@ def discriminator_loss(real_output, fake_output):
 
 
 def generator_loss(batch_hr, batch_es, fake_output):
-    #cross_entropy_loss = cross_entropy(tf.ones_like(fake_output), fake_output)
+    cross_entropy_loss = cross_entropy(tf.ones_like(fake_output), fake_output)
     mse_loss = tf.reduce_mean(tf.keras.losses.mean_squared_error(batch_hr, batch_es))
 
-    #return mse_loss + 1e-3 * cross_entropy_loss
-    return mse_loss
+    return mse_loss + 1e-3 * cross_entropy_loss
 
 
 class Generator(Model):
