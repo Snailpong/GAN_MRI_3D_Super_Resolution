@@ -57,13 +57,13 @@ class Discriminator(tf.keras.Model):
 
     def __init__(self, **kwargs):
         super(Discriminator, self).__init__(**kwargs)
-        self.conv_1 = tf.keras.layers.Conv3D(16, 3, 1, 'same')
+        self.conv_1 = tf.keras.layers.Conv3D(8, 3, 1, 'same')
         self.conv_blocks = tf.keras.Sequential(name='ConvBlocks')
         self.conv_blocks.add(ConvBlock(16, 2))
-        for i in range(1, 3):
-            self.conv_blocks.add(ConvBlock(4 * 2**i, 1))
-            self.conv_blocks.add(ConvBlock(4 * 2**i, 2))
-        self.fc_1 = tf.keras.layers.Dense(16)
+        for i in range(1, 5):
+            self.conv_blocks.add(ConvBlock(16 * 2**i, 1))
+            self.conv_blocks.add(ConvBlock(16 * 2**i, 2))
+        self.fc_1 = tf.keras.layers.Dense(1024)
         self.fc_2 = tf.keras.layers.Dense(1)
         self.flatten = tf.keras.layers.Flatten()
 
@@ -75,7 +75,7 @@ class Discriminator(tf.keras.Model):
         x = self.fc_1(x)
         x = tf.nn.leaky_relu(x, alpha=0.2)
         x = self.fc_2(x)
-        x = tf.math.sigmoid(x)
+        # x = tf.math.sigmoid(x)
         return x
 
 
