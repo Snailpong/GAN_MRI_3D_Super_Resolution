@@ -104,38 +104,3 @@ if __name__ == "__main__":
         discriminator.save_weights('./models/discriminator')
 
         print('Validation - gen_loss: {}, disc_loss: {}, time: {}'.format(round(float(loss_gen), 4), round(float(loss_disc), 4), time.time() - start))
-
-        
-
-    #model = keras.models.load_model('./srcnn_{}x'.format(SCALE), custom_objects={'psnr':psnr})
-
-
-    # save_checkpoint = ModelCheckpoint(
-    #     FILE_PATH,
-    #     monitor="val_loss",
-    #     verbose=1,
-    #     save_best_only=True,
-    #     save_weights_only=False,
-    #     mode="auto",
-    #     period=1,
-    # )
-
-    
-
-    # model.compile(loss="mean_squared_error", optimizer=optimizer, metrics=[psnr])
-    # # model.load_weights(FILE_PATH)
-
-    # log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    # tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=10)
-
-
-    # model.fit(
-    #     train_data_generator,
-    #     validation_data=(test_x, test_y),
-    #     steps_per_epoch= N_TRAIN_DATA,
-    #     epochs=EPOCHS,
-    #     callbacks=[save_checkpoint, tensorboard_callback],
-    # )
-
-
-    # model.save('srcnn_{}x'.format(SCALE))
